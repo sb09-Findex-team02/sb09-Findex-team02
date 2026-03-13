@@ -21,6 +21,7 @@ public class IntegrationConfigService {
   private final IndexInfoRepository indexInfoRepository;
   private final IntegrationConfigMapper integrationConfigMapper;
 
+  // Index_info 추가 시 생성
   public AutoSyncConfigDto create(Long indexId){
 
     // index_id 값으로 index_info 객체 조회
