@@ -1,22 +1,22 @@
-package org.example.dto.data;
+package org.example.dto.response;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record OpenApiStockResponseDto(Response response) {
-  public record Response(Header header){
-    public record Header(String resultCode, String resultMsg){
-      public record Body(
+  public record Response(Header header, Body body){}
+  public record Header(String resultCode, String resultMsg){}
+  public record Body(
           int numOfRows,
           int pageNo,
           int totalCount,
           Items items
       ){}
 
-      public record Items(List<Item> item){}
+  public record Items(List<Item> item) {}
 
-      public record Item(
+  public record Item(
           @JsonProperty("idxCsf") String CategoryName,            // 지수분류명
           @JsonProperty("idxNm") String indexName,                // 지수명
           @JsonProperty("epyItmsCnt") Integer componentCount,     // 채용종목 수
@@ -35,5 +35,4 @@ public record OpenApiStockResponseDto(Response response) {
           @JsonProperty("lstgMrktToAmt") Long marketCap           // 상장 시가 총액
       ){}
     }
-  }
-}
+
