@@ -3,14 +3,23 @@ package org.example.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.example.dto.response.FavoritePerformanceResponse;
+import org.example.dto.response.RankedIndexPerformanceDto;
 import org.example.dto.response.RankedIndexPerformanceDto.IndexPerformanceDto;
 import org.example.entity.IndexData;
 import org.example.repository.IndexDataRepository;
+import org.example.repository.IndexInfoRepository;
+import org.h2.index.Index;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,21 +28,71 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class IndexDataService {
   private final IndexDataRepository indexDataRepository;
+  private final IndexInfoRepository indexInfoRepository;
 
-  public List<IndexPerformanceDto> getFavoritePerformances(List<Long> favoriteIndexIds) {
-    Instant today = Instant.now();
-    Instant yesterday = today.minus(1, ChronoUnit.DAYS);
+  public List<FavoritePerformanceResponse> getFavoritePerformances(String periodType) {
+    ZoneId zoneId = ZoneId.of("Asia/Seoul");
+    Instant today = LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant();
+    Instant baseDate;
 
-    List<Instant> baseDates = List.of(today,yesterday);
+    List<Long> favoriteIndexIds = indexInfoRepository.findFavoriteIndexIds();
 
-    List<IndexData> baseDataList = indexDataRepository
-        .findBaseData(favoriteIndexIds, baseDates);
+    if(favoriteIndexIds.isEmpty()) {
+      return Collections.emptyList();
+    }
 
-    Map<Long, List<IndexData>> groupedData = baseDataList.stream()
+    switch(periodType.toUpperCase()) {
+      case "DAILY" :
+      default:
+        baseDate = today.minus(1, ChronoUnit.DAYS);
+        break;
+      case "WEEKLY" :
+        baseDate = today.minus(7, ChronoUnit.DAYS);
+        break;
+      case "MONTHLY" :
+        baseDate = today.minus(30,ChronoUnit.DAYS);
+        break;
+    }
+
+    List<Instant> baseDates = List.of(today,baseDate);
+    List<IndexData> dataList = indexDataRepository.findAllBaseData(favoriteIndexIds,baseDates);
+
+
+    Map<Long, List<IndexData>> groupedData = dataList.stream()
         .collect(Collectors.groupingBy(data -> data.getIndexInfo().getId()));
 
-    return groupedData.entrySet().stream()
-        .map(entry -> calculatePerformance(entry.getKey(), entry.getValue()))
+    List<IndexPerformanceDto> performances = groupedData.entrySet().stream()
+        .map(entry-> calculatePerformance(entry.getKey(), entry.getValue()))
+        .toList();
+    AtomicInteger rankCounter = new AtomicInteger(1);
+
+    return dataList.stream()
+        .collect(Collectors.groupingBy(data -> data.getIndexInfo().getId()))
+        .entrySet().stream()
+        .map(entry -> {
+          Long indexId = entry.getKey();
+          List<IndexData> indexData = entry.getValue();
+
+          if(indexData.size() < 2) return null;
+
+          IndexData current = indexData.get(0);
+          IndexData before = indexData.get(1);
+
+          BigDecimal versus = current.getClosePrice().subtract(before.getClosePrice());
+          BigDecimal fluctuationRate = versus.divide(before.getClosePrice(), 4, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+
+          return new FavoritePerformanceResponse(
+              indexId,
+              current.getIndexInfo().getCategoryName(),
+              current.getIndexInfo().getIndexName(),
+              versus,
+              fluctuationRate,
+              current.getClosePrice(),
+              before.getClosePrice()
+          );
+        })
+        .filter(Objects::nonNull)
+        .sorted((a,b) -> b.fluctuationRate().compareTo(a.fluctuationRate()))
         .toList();
   }
 

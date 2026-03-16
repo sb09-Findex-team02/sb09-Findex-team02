@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.entity.base.BaseEntity;
-import org.hibernate.boot.jaxb.SourceType;
+import org.example.entity.type.SourceType;
 
 import java.math.BigDecimal;
 
@@ -30,7 +30,7 @@ public class IndexInfo extends BaseEntity {
     //JPA에서 NULL을 처리하기위해 integer사용
     private Integer component;
 
-    @Column(name = "base_data", nullable = false)
+    @Column(name = "base_date", nullable = false)
     private Instant baseData;
 
     @Column(name = "base_index", nullable = false, precision = 10, scale = 2)
