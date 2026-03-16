@@ -12,13 +12,22 @@ import org.example.entity.base.BaseEntity;
 import org.example.entity.type.SourceType;
 
 import java.math.BigDecimal;
+import jakarta.persistence.Id;
 
 
 @Entity
 @Table(name = "index_infos")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IndexInfo extends BaseEntity {
+public class IndexInfo {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "index_infos_seq")
+    @SequenceGenerator(
+        name = "index_infos_seq",
+        sequenceName = "index_infos_sequence",
+        allocationSize = 50
+    )
+    private Long id;
 
     @Column(name = "category_name", nullable = false, length = 100)
     private String categoryName;
@@ -57,7 +66,9 @@ public class IndexInfo extends BaseEntity {
 
     // 생성자 파라미터가 너무 길어져서 분리
     // 생성자 호출하면서 같이 사용해야함
+
     public void setIndexDetails(LocalDate baseData, BigDecimal baseIndex, Integer component) {
+
         this.baseDate = baseData;
         this.baseIndex = baseIndex;
         this.component = component;

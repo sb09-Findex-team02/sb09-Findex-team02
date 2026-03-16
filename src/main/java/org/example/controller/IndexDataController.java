@@ -1,12 +1,16 @@
 package org.example.controller;
 
+import java.time.Instant;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.example.dto.data.IndexDataDto;
 import org.example.dto.request.IndexDataCreateRequest;
+import org.example.dto.request.IndexDataSearchRequest;
+import org.example.dto.request.IndexDataUpdateRequest;
 import org.example.dto.response.FavoritePerformanceResponse;
 import org.example.service.IndexDataService;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +34,29 @@ public class IndexDataController {
   public Long create(@RequestBody IndexDataCreateRequest request) {
     return indexDataService.create(request);
   }
+
+  @GetMapping
+  public List<IndexDataDto> search(IndexDataSearchRequest request) {
+    return indexDataService.search(request);
+  }
+
+  @PatchMapping("/{indexId}/{baseDate}")
+  public Long update(
+      @PathVariable Long indexId,
+      @PathVariable Instant baseDate,
+      @RequestBody IndexDataUpdateRequest request
+  ) {
+    return indexDataService.update(indexId, baseDate, request);
+  }
+
+  @DeleteMapping("/{indexId}/{baseDate}")
+  public void delete(
+      @PathVariable Long indexId,
+      @PathVariable Instant baseDate
+  ) {
+    indexDataService.delete(indexId, baseDate);
+  }
+
 
   @Operation(summary = "관심 지수 성과 조회", description = "즐겨찾기한 지수들의 기간별 성과를 요약하여 조회합니다.")
   @GetMapping("/performance/favorite")

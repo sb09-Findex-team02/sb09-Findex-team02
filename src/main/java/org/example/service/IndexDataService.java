@@ -1,5 +1,8 @@
 package org.example.service;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -13,11 +16,15 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.example.dto.data.IndexDataDto;
 import org.example.dto.request.IndexDataCreateRequest;
+import org.example.dto.request.IndexDataSearchRequest;
+import org.example.dto.request.IndexDataUpdateRequest;
 import org.example.dto.response.FavoritePerformanceResponse;
 import org.example.dto.response.RankedIndexPerformanceDto.IndexPerformanceDto;
 import org.example.entity.IndexData;
 import org.example.entity.IndexInfo;
+import org.example.mapper.IndexDataMapper;
 import org.example.repository.IndexDataRepository;
 import org.example.repository.IndexInfoRepository;
 import org.jspecify.annotations.NonNull;
@@ -31,7 +38,9 @@ public class IndexDataService {
 
   private final IndexDataRepository indexDataRepository;
   private final IndexInfoRepository indexInfoRepository;
+  private final IndexDataMapper indexDataMapper;
 
+  //생성
   @Transactional
   public Long create(IndexDataCreateRequest request) {
 
@@ -87,6 +96,68 @@ public class IndexDataService {
     );
     return indexData;
   }
+
+  //조회
+  public List<IndexDataDto> search(IndexDataSearchRequest request) {
+
+    return indexDataRepository
+        .findByIndexInfo_IdAndBaseDateBetween(
+            request.indexId(),
+            request.startDate(),
+            request.endDate()
+        )
+        .stream()
+        .map(indexDataMapper::toDto)
+        .toList();
+  }
+
+  //업데이트
+  @Transactional
+  public Long update(Long indexId, Instant baseDate, IndexDataUpdateRequest request) {
+
+    IndexInfo indexInfo = indexInfoRepository.findById(indexId)
+        .orElseThrow(() -> new NoSuchElementException("Index not found"));
+
+    IndexData indexData = indexDataRepository
+        .findByIndexInfoAndBaseDate(indexInfo, baseDate)
+        .orElseThrow(() -> new NoSuchElementException("Index data not found"));
+
+    indexData.setPrices(
+        request.marketPrice(),
+        request.closingPrice(),
+        request.highPrice(),
+        request.lowPrice()
+    );
+
+    indexData.setFluctuationInfo(
+        request.versus(),
+        request.fluctuationRate()
+    );
+
+    indexData.setMarketData(
+        request.tradingQuantity(),
+        request.tradingPrice(),
+        request.marketTotalAmount()
+    );
+
+    return indexData.getId();
+  }
+
+  //삭제
+  @Transactional
+  public void delete(Long indexId, Instant baseDate) {
+
+    IndexInfo indexInfo = indexInfoRepository.findById(indexId)
+        .orElseThrow(() -> new NoSuchElementException("Index not found"));
+
+    IndexData indexData = indexDataRepository
+        .findByIndexInfoAndBaseDate(indexInfo, baseDate)
+        .orElseThrow(() -> new NoSuchElementException("Index data not found"));
+
+    indexDataRepository.delete(indexData);
+  }
+
+
 
   public List<FavoritePerformanceResponse> getFavoritePerformances(String periodType) {
     ZoneId zoneId = ZoneId.of("Asia/Seoul");
