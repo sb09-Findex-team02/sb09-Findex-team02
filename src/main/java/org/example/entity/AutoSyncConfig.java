@@ -6,32 +6,40 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.time.Instant;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.entity.base.BaseEntity;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "integration_configs")
+@Table(name = "auto_sync_configs")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IntegrationConfig extends BaseEntity {
+public class AutoSyncConfig extends BaseEntity {
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "index_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private IndexInfo indexInfo;
 
-  @Column(name = "is_active", nullable = false)
-  private Boolean isActive = false;
+  @Column(name = "enabled", nullable = false)
+  private Boolean enabled = false;
 
   @Column(name = "last_sync_at")
-  private Instant lastSyncAt;
+  private LocalDate lastSyncAt;
 
-  public void updateActive(boolean status) {
-    this.isActive = status;
+  public AutoSyncConfig(IndexInfo indexInfo){
+    this.indexInfo = indexInfo;
+  }
+
+  public void updateEnabled(boolean status) {
+    this.enabled = status;
   }
 
   public void updateLastSyncAt() {
-    this.lastSyncAt = Instant.now();
+    this.lastSyncAt = LocalDate.now();
   }
+
 }
