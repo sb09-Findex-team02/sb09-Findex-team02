@@ -307,7 +307,7 @@ public class IntegrationService {
       return indexInfos.stream().collect(Collectors.toMap(
           IndexInfo::getIndexName,
           indexInfo -> indexDataRepository
-              .findByIndexInfoAndBaseDateBetween(indexInfo, startDate, endDate)
+              .findByIndexInfo_IdAndBaseDateBetween(indexInfo.getId(), startDate, endDate)
               .stream()
               .collect(Collectors.toMap(
                   IndexData::getBaseDate,
