@@ -106,11 +106,11 @@ public class IntegrationService {
       } else {
         IndexInfoCreateRequest infoCreateRequest = toIndexInfoCreateRequest(item);
 
-        IndexInfo newIndex = new IndexInfo(infoCreateRequest.getCategoryName(),
-            infoCreateRequest.getIndexName(), SourceType.OPEN_API);
-        newIndex.setIndexDetails(LocalDate.from(infoCreateRequest.getBaseDate()),
-            infoCreateRequest.getBaseIndex()
-            , infoCreateRequest.getComponent());
+        IndexInfo newIndex = new IndexInfo(infoCreateRequest.indexName(),
+            infoCreateRequest.indexName(), SourceType.OPEN_API);
+        newIndex.setIndexDetails(LocalDate.from(infoCreateRequest.basePointInTime()),
+            infoCreateRequest.baseIndex()
+            , infoCreateRequest.employedItemsCount());
         outputIndexInfoList.add(newIndex);
         outputAutoSyncConfigList.add(new AutoSyncConfig(newIndex));
 
@@ -282,7 +282,7 @@ public class IntegrationService {
       return new IndexInfoUpdateRequest(
           item.componentCount(),
           parseLocalDate(item.infoBaseDate()),
-          item.baseIndex().doubleValue(),
+          item.baseIndex(),
           null
       );
     }
@@ -293,7 +293,8 @@ public class IntegrationService {
           item.indexName(),
           item.componentCount(),
           parseLocalDate(item.infoBaseDate()),
-          item.baseIndex().doubleValue(),
+          item.baseIndex(),
+          SourceType.OPEN_API,
           false
       );
     }
