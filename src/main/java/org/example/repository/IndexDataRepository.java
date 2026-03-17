@@ -1,11 +1,11 @@
 package org.example.repository;
 
+
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import java.time.Instant;
 import java.util.List;
-import java.util.List;
 import java.time.LocalDate;
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import org.example.entity.IndexData;
 import org.example.entity.IndexInfo;
@@ -16,10 +16,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
 
-  Optional<IndexData> findByIndexInfoAndBaseDate(
-      IndexInfo indexId,
-      Instant baseDate
-  );
 
   List<IndexData> findByIndexInfo_IdAndBaseDateBetween(
       Long indexId,
@@ -29,7 +25,12 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
   Optional<IndexData> findByIndexInfoAndBaseDate(IndexInfo indexId, LocalDate baseDate);
 
 
-  List<IndexData> findByIndexInfoAndBaseDateBetween(IndexInfo indexInfo, LocalDate startDate, LocalDate endDate);
+  List<IndexData> findByIndexInfoAndBaseDateBetween(
+      IndexInfo indexInfo,
+      LocalDate startDate,
+      LocalDate endDate,
+      Pageable pageable
+  );
 
 
   @Query("SELECT i FROM IndexData i " +
@@ -54,5 +55,28 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
       @Param("ids") List<Long> ids,
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);
+
+  List<IndexData> findByIndexInfo_IdAndBaseDateBetween(
+      Long indexId,
+      LocalDate startDate,
+      LocalDate endDate,
+      Pageable pageable
+  );
+
+  List<IndexData> findByIndexInfo_IdAndBaseDateBetweenAndIdGreaterThan(
+      Long indexId,
+      LocalDate startDate,
+      LocalDate endDate,
+      Long idAfter,
+      Pageable pageable
+  );
+
+  //csv export
+  List<IndexData> findByIndexInfo_IdAndBaseDateBetween(
+      Long indexId,
+      LocalDate startDate,
+      LocalDate endDate,
+      Sort sort
+  );
 
 }
