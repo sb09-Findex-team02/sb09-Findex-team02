@@ -2,12 +2,12 @@ package org.example.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import org.example.entity.type.SourceType;
 
 @Schema(description = "지수 정보 생성 요청")
 public record IndexInfoCreateRequest(
-
         @Schema(description = "지수 분류명", example = "KOSPI시리즈")
         String indexClassification,
 
@@ -34,4 +34,5 @@ public record IndexInfoCreateRequest(
         Boolean favorite
 
 ) {
+
 }
