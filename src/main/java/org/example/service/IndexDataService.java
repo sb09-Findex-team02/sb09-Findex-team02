@@ -171,10 +171,11 @@ public class IndexDataService {
         hasNext
     );
   }
-  //업데이트 (데이터 id를 통해 수정 여부 판단)
+  //업데이트 (지수데이터 값의 id로 존재여부 판단)
   @Transactional
   public Long update(Long indexDataId, IndexDataUpdateRequest request) {
 
+    //지수데이터의 ID값으로 중복여부 판단
     IndexData indexData = indexDataRepository.findById(indexDataId)
         .orElseThrow(() -> new NoSuchElementException("해당 ID의 지수 데이터가 없습니다."));
 
@@ -200,14 +201,14 @@ public class IndexDataService {
     return indexData.getId();
   }
 
-  //삭제
+  //삭제 (지수데이터 값의 id로 존재여부 판단)
   @Transactional
-  public void delete(Long indexId) {
+  public void delete(Long indexDataId) {
 
-    if (!indexDataRepository.existsById(indexId)) {
+    if (!indexDataRepository.existsById(indexDataId)) {
       throw new NoSuchElementException("해당 ID의 데이터가 존재하지 않습니다.");
     }
-    indexDataRepository.deleteById(indexId);
+    indexDataRepository.deleteById(indexDataId);
   }
 
   //csv파일로 export
