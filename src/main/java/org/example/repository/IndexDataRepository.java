@@ -87,4 +87,6 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
       Sort sort
   );
 
+  List<IndexData> findByBaseDateBetweenAndIdGreaterThan(LocalDate startDate, LocalDate endDate, Long idAfter, Pageable pageable);
+  List<IndexData> findByBaseDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
 }
