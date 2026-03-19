@@ -171,7 +171,7 @@ public class IndexDataService {
         hasNext
     );
   }
-  //업데이트 (지수데이터 값의 id로 존재여부 판단)
+  //업데이트 (지수데이터 값의 id로 존재 여부 판단)
   @Transactional
   public Long update(Long indexDataId, IndexDataUpdateRequest request) {
 
