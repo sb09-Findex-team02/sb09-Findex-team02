@@ -124,8 +124,13 @@ public class IndexDataService {
     Sort sort = Sort.by(direction, sortField).and(Sort.by(direction, "id"));
     Pageable pageable = PageRequest.of(0, size + 1, sort);
 
+    LocalDate safeStartDate = request.startDate() != null ? request.startDate() : LocalDate.of(2000, 1, 1);
+    LocalDate safeEndDate = request.endDate() != null ? request.endDate() : LocalDate.now().plusDays(1);
+
     List<IndexData> rawResults = indexDataRepository.findIndexDataByCursor(
-        request.indexId(),
+        request.indexInfoId(),
+        safeStartDate,
+        safeEndDate,
         request.idAfter(),
         direction.isDescending(),
         pageable
@@ -211,7 +216,7 @@ public class IndexDataService {
 
     List<IndexData> data = indexDataRepository
         .findByIndexInfo_IdAndBaseDateBetween(
-            request.indexId(),
+            request.indexInfoId(),
             request.startDate(),
             request.endDate(),
             sort
