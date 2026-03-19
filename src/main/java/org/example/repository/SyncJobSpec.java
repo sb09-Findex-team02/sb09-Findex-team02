@@ -33,10 +33,16 @@ public class SyncJobSpec {
         predicates.add(cb.equal(root.get("result"), request.status()));
       }
       if (request.jobTimeFrom() != null) {
-        predicates.add(cb.greaterThanOrEqualTo(root.get("workedAt"), request.jobTimeFrom()));
+        predicates.add(cb.greaterThanOrEqualTo(
+            root.get("workedAt"),
+            request.jobTimeFrom().atStartOfDay()
+        ));
       }
       if (request.jobTimeTo() != null) {
-        predicates.add(cb.lessThanOrEqualTo(root.get("workedAt"), request.jobTimeTo()));
+        predicates.add(cb.lessThanOrEqualTo(
+            root.get("workedAt"),
+            request.jobTimeTo().atTime(java.time.LocalTime.MAX)
+        ));
       }
 
       return cb.and(predicates.toArray(new Predicate[0]));
