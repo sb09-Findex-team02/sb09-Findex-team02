@@ -6,7 +6,7 @@ import java.time.LocalDate;
 @Schema(description = "지수 데이터 목록 조회 요청 데이터")
 public record IndexDataSearchRequest(
     @Schema(description = "지수 정보 ID")
-    Long indexId,
+    Long indexInfoId,
     @Schema(description = "시작 일자")
     LocalDate startDate,
     @Schema(description = "종료 일자")
