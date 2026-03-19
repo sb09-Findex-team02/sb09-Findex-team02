@@ -11,6 +11,7 @@ import org.example.dto.response.CursorPageResponseIndexInfoDto;
 import org.example.dto.response.IndexInfoResponseDto;
 import org.example.dto.response.IndexInfoSummaryDto;
 import org.example.entity.IndexInfo;
+import org.example.entity.type.SourceType;
 import org.example.repository.IndexInfoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +38,7 @@ public class IndexInfoService {
         IndexInfo indexInfo = new IndexInfo(
                 request.indexClassification(),
                 request.indexName(),
-                request.sourceType()
+                SourceType.USER
         );
 
         indexInfo.setIndexDetails(

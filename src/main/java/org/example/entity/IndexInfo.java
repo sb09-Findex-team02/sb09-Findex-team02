@@ -14,6 +14,8 @@ import org.example.entity.type.SourceType;
 
 import java.math.BigDecimal;
 import jakarta.persistence.Id;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 
 @Entity
@@ -47,7 +49,8 @@ public class IndexInfo {
     private BigDecimal baseIndex;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "source_type", nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "source_type", columnDefinition = "source_type_enum")
     private SourceType sourceType;
 
     @Column(name = "favorite", nullable = false)
