@@ -121,15 +121,11 @@ public class IndexDataService {
         ? Sort.Direction.DESC
         : Sort.Direction.ASC;
 
-    Pageable pageable = PageRequest.of(0, size + 1, Sort.by(direction, sortField));
-
-    LocalDate safeStartDate = request.startDate() != null ? request.startDate() : LocalDate.of(2000, 1, 1);
-    LocalDate safeEndDate = request.endDate() != null ? request.endDate() : LocalDate.now().plusDays(1);
+    Sort sort = Sort.by(direction, sortField).and(Sort.by(direction, "id"));
+    Pageable pageable = PageRequest.of(0, size + 1, sort);
 
     List<IndexData> rawResults = indexDataRepository.findIndexDataByCursor(
         request.indexId(),
-        safeStartDate,
-        safeEndDate,
         request.idAfter(),
         direction.isDescending(),
         pageable
@@ -147,12 +143,17 @@ public class IndexDataService {
     Long lastId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
     String nextCursor = (lastId != null) ? String.valueOf(lastId) : null;
 
+    long totalElements = 0L;
+    if (request.idAfter() == null) {
+      totalElements = indexDataRepository.count();
+    }
+
     return new CursorPageResponseIndexDataDto<>(
         contentDtoList,
         nextCursor,
         lastId,
         contentDtoList.size(),
-        0L,
+        totalElements,
         hasNext
     );
   }
