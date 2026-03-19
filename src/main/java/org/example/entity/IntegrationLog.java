@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.*;
 import org.example.entity.type.JobType;
@@ -51,7 +52,7 @@ public class IntegrationLog {
   private String worker;
 
   @Column(name = "worked_at")
-  private LocalDate workedAt;
+  private LocalDateTime workedAt;
 
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -75,7 +76,7 @@ public class IntegrationLog {
 
   // 생성자 파라미터 너무 길어져서 분리함
   // 세부 연동 작업 정보 설정
-  public void setIntegrationLogDetails(IndexData indexData, LocalDate targetDate, String worker, LocalDate workedAt) {
+  public void setIntegrationLogDetails(IndexData indexData, LocalDate targetDate, String worker, LocalDateTime workedAt) {
     this.indexData = indexData;
     this.targetDate = targetDate;
     this.worker = worker;
@@ -90,7 +91,7 @@ public class IntegrationLog {
         .worker(worker)
         .status(StatusType.SUCCESS)
         .result(StatusType.SUCCESS)
-        .workedAt(LocalDate.now())
+        .workedAt(LocalDateTime.now())
         .build();
   }
   public static IntegrationLog createFailed(JobType jobType, IndexInfo indexInfo,
@@ -102,7 +103,7 @@ public class IntegrationLog {
         .worker(worker)
         .status(StatusType.FAILED)
         .result(StatusType.FAILED)
-        .workedAt(LocalDate.now())
+        .workedAt(LocalDateTime.now())
         .build();
   }
 

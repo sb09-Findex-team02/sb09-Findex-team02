@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface SyncJobMapper {
   @Mapping(source = "indexInfo.id", target = "indexInfoId")
+  @Mapping(source = "workedAt", target = "jobTime")
   SyncJobDto toDto(IntegrationLog integrationLog);
   default LocalDate map(Instant instant) {
     if (instant == null) {
