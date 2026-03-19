@@ -1,6 +1,8 @@
 package org.example.service;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -150,7 +152,7 @@ public class IntegrationService {
         // 연동 후 자동 연동 설정에 최근 연동 날짜 갱신
         AutoSyncConfig config = configMap.get(indexInfo.getId());
         if (config != null) {
-          config.updateLastSyncAt(LocalDate.now());
+          config.updateLastSyncAt(Instant.now());
         }
       } catch (Exception e) {
         log.error("[지수 데이터 연동 실패] indexName = {}, date = {}, error = {}", item.indexName(), item.dataBaseDate(), e.getMessage());
@@ -396,9 +398,16 @@ public class IntegrationService {
     List<Item> filteredItems = fetchedItems.stream()
         .filter(item -> {
           AutoSyncConfig config = autoConfigMap.get(item.indexName());
-          if (config == null) return false;
+          if (config == null || config.getLastSyncAt() == null) return false;
+
           LocalDate itemDate = parseLocalDate(item.dataBaseDate());
-          return itemDate != null && itemDate.isAfter(config.getLastSyncAt());
+          if (itemDate == null) return false;
+
+          LocalDate lastSyncDate = config.getLastSyncAt()
+              .atZone(ZoneId.of("Asia/Seoul"))
+              .toLocalDate();
+
+          return itemDate.isAfter(lastSyncDate);
         })
         .toList();
 
