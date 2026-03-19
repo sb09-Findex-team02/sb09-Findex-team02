@@ -284,6 +284,7 @@ public class IntegrationService {
   }
   private IndexDataUpdateRequest toIndexDataUpdateRequest (Item item){
     return new IndexDataUpdateRequest(
+
         item.openPrice(),
         item.closePrice(),
         item.highPrice(),

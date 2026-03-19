@@ -68,13 +68,11 @@ public class IndexDataService {
 
     LocalDate baseDate = request.baseDate();
 
-    // 중복 체크 (indexInfo + baseDate)
-    indexDataRepository
-        .findByIndexInfo(indexInfo)
+    // 중복 체크 (indexInfo로 체크)
+    indexDataRepository.findByIndexInfoAndBaseDate(indexInfo, baseDate)
         .ifPresent(data -> {
-          throw new IllegalArgumentException("이미 존재하는 지수 데이터입니다.");
+          throw new IllegalArgumentException("해당 날짜에 이미 존재하는 지수 데이터입니다.");
         });
-
     // 엔티티 생성
     IndexData indexData = getIndexData(request, indexInfo, baseDate);
 
@@ -129,23 +127,25 @@ public class IndexDataService {
 
     Pageable pageable = PageRequest.of(0, size + 1, Sort.by(direction, sortField)); // ⭐ hasNext 판단용 +1
 
+    LocalDate safeStartDate = request.startDate() != null ? request.startDate() : LocalDate.of(2000, 1, 1);
+    LocalDate safeEndDate = request.endDate() != null ? request.endDate() : LocalDate.now().plusDays(1);
+
     List<IndexData> result;
 
+    boolean isAllIndices = (request.indexId() == null);
+
     if (request.idAfter() != null) {
-      result = indexDataRepository.findByIndexInfo_IdAndBaseDateBetweenAndIdGreaterThan(
-          request.indexId(),
-          request.startDate(),
-          request.endDate(),
-          request.idAfter(),
-          pageable
-      );
+      if (isAllIndices) {
+        result = indexDataRepository.findByBaseDateBetweenAndIdGreaterThan(safeStartDate, safeEndDate, request.idAfter(), pageable);
+      } else {
+        result = indexDataRepository.findByIndexInfo_IdAndBaseDateBetweenAndIdGreaterThan(request.indexId(), safeStartDate, safeEndDate, request.idAfter(), pageable);
+      }
     } else {
-      result = indexDataRepository.findByIndexInfo_IdAndBaseDateBetween(
-          request.indexId(),
-          request.startDate(),
-          request.endDate(),
-          pageable
-      );
+      if (isAllIndices) {
+        result = indexDataRepository.findByBaseDateBetween(safeStartDate, safeEndDate, pageable);
+      } else {
+        result = indexDataRepository.findByIndexInfo_IdAndBaseDateBetween(request.indexId(), safeStartDate, safeEndDate, pageable);
+      }
     }
 
     boolean hasNext = result.size() > size;
@@ -173,16 +173,14 @@ public class IndexDataService {
         hasNext
     );
   }
-  //업데이트
+  //업데이트 (지수데이터 값의 id로 존재 여부 판단)
   @Transactional
-  public Long update(Long indexId, IndexDataUpdateRequest request) {
+  public Long update(Long indexDataId, IndexDataUpdateRequest request) {
 
-    IndexInfo indexInfo = indexInfoRepository.findById(indexId)
-        .orElseThrow(() -> new NoSuchElementException("Index not found"));
+    //지수데이터의 ID값으로 중복여부 판단
+    IndexData indexData = indexDataRepository.findById(indexDataId)
+        .orElseThrow(() -> new NoSuchElementException("해당 ID의 지수 데이터가 없습니다."));
 
-    IndexData indexData = indexDataRepository
-        .findByIndexInfo(indexInfo)
-        .orElseThrow(() -> new NoSuchElementException("Index data not found"));
 
     indexData.setPrices(
         request.marketPrice(),
@@ -205,18 +203,14 @@ public class IndexDataService {
     return indexData.getId();
   }
 
-  //삭제
+  //삭제 (지수데이터 값의 id로 존재여부 판단)
   @Transactional
-  public void delete(Long indexId) {
+  public void delete(Long indexDataId) {
 
-    IndexInfo indexInfo = indexInfoRepository.findById(indexId)
-        .orElseThrow(() -> new NoSuchElementException("Index not found"));
-
-    IndexData indexData = indexDataRepository
-        .findByIndexInfo(indexInfo)
-        .orElseThrow(() -> new NoSuchElementException("Index data not found"));
-
-    indexDataRepository.delete(indexData);
+    if (!indexDataRepository.existsById(indexDataId)) {
+      throw new NoSuchElementException("해당 ID의 데이터가 존재하지 않습니다.");
+    }
+    indexDataRepository.deleteById(indexDataId);
   }
 
   //csv파일로 export
