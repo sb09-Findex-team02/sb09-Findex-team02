@@ -91,4 +91,13 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
       @Param("isDesc") boolean isDesc,
       Pageable pageable
   );
+
+  @Query("SELECT COUNT(d) FROM IndexData d " +
+      "WHERE (:indexId IS NULL OR d.indexInfo.id = :indexId) " +
+      "AND (d.baseDate BETWEEN :startDate AND :endDate)")
+  long countIndexDataByCursor(
+      @Param("indexId") Long indexId,
+      @Param("startDate") LocalDate startDate,
+      @Param("endDate") LocalDate endDate
+  );
 }
