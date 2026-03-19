@@ -76,7 +76,11 @@ public class IntegrationService {
       return Collections.emptyList();
     }
     Map<String, IndexInfo> indexInfoMap = indexInfoRepository.findAll().stream()
-        .collect(Collectors.toMap(IndexInfo::getIndexName, i -> i));
+        .collect(Collectors.toMap(
+            i -> i.getCategoryName() + "|" + i.getIndexName(),
+            i -> i,
+            (existing, replacement) -> existing // 중복 시 기존 데이터 유지
+        ));
 
     List<IndexInfo> newIndexInfoList = new ArrayList<>();
     List<IntegrationLog> logList = new ArrayList<>();
@@ -84,18 +88,20 @@ public class IntegrationService {
 
     for (Item item : fetchedItems) {
       try {
-        IndexInfo existing = indexInfoMap.get(item.indexName());
+        String targetKey = item.categoryName() + "|" + item.indexName();
+        IndexInfo existing = indexInfoMap.get(targetKey);
         if (existing != null) {
           existing.updateFromApi(toIndexInfoUpdateRequest(item));
         } else {
           IndexInfoCreateRequest createReq = toIndexInfoCreateRequest(item);
-          IndexInfo newIndex = new IndexInfo(createReq.indexName(), createReq.indexName(),
+          IndexInfo newIndex = new IndexInfo(createReq.indexClassification(), createReq.indexName(),
               SourceType.OPEN_API);
           newIndex.setIndexDetails(createReq.basePointInTime(), createReq.baseIndex(),
               createReq.employedItemsCount());
 
           newIndexInfoList.add(newIndex);
           autoSyncConfigList.add(new AutoSyncConfig(newIndex));
+          indexInfoMap.put(targetKey, newIndex);
         }
         logList.add(
             IntegrationLog.createSuccess(JobType.INDEX_INFO, existing, LocalDate.now(), worker));
