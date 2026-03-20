@@ -13,7 +13,7 @@
 
 ## 프로젝트 소개
 - 외부 API 연동 금융 분석 도구 사이트의 Spring 백엔드 시스템 구축
-- 프로젝트 기간: 2026.03.11 ~ 2024.03.20
+- 프로젝트 기간: 2026.03.11 ~ 2026.03.20
 - 배포 링크: sb09-findex-team02-production.up.railway.app
 - 시연 영상: https://drive.google.com/file/d/1-70iuQdShcrgSPylxgFS_tp-11bxBZY8/view
 - 스크린샷
