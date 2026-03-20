@@ -19,7 +19,9 @@ import org.hibernate.type.SqlTypes;
 
 
 @Entity
-@Table(name = "index_infos")
+@Table(name = "index_infos", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_category_index", columnNames = {"category_name", "index_name"})
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IndexInfo {

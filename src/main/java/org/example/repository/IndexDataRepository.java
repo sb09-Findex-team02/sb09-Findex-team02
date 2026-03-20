@@ -110,4 +110,10 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate
   );
+  @Query(value = "SELECT DISTINCT base_date FROM index_data " +
+      "WHERE base_date <= :date ORDER BY base_date DESC LIMIT 1",
+      nativeQuery = true)
+  Optional<LocalDate> findFirstBaseDateBefore(
+      @Param("date") LocalDate date
+  );
 }
