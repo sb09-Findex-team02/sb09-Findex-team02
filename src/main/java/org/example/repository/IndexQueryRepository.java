@@ -18,13 +18,13 @@ public class IndexQueryRepository {
 
   private final JPAQueryFactory jpaQueryFactory;
 
-  public List<IndexData> findDataByDatesAndIndexName(List<LocalDate> baseDates, String indexName){
+  public List<IndexData> findDataByDatesAndIndexName(List<LocalDate> baseDates, Long indexInfoId){
     return jpaQueryFactory
         .selectFrom(indexData)
         .join(indexData.indexInfo, indexInfo).fetchJoin()
         .where(
             indexData.baseDate.in(baseDates),
-            indexNameEq(indexName)
+            (indexInfoId != null && indexInfoId != 0) ? indexInfo.id.eq(indexInfoId) : null
         )
         .fetch();
   }

@@ -306,7 +306,7 @@ public class IndexDataService {
   }
 
   @Transactional(readOnly = true)
-  public List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfold, String indexName, String periodType, Integer limit){
+  public List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfold, String periodType, Integer limit){
 
     List<LocalDate> lateDates = indexDataRepository.findDistinctByBaseDate(PageRequest.of(0,2));
     if (lateDates == null || lateDates.size() < 2) {
@@ -315,25 +315,34 @@ public class IndexDataService {
 
     int rankLimit = (limit == null ) ? 10 : Math.min(limit, 10);
 
-    LocalDate today = lateDates.get(0);
-    LocalDate baseDate;
+    LocalDate today = indexDataRepository
+        .findDistinctByBaseDate(PageRequest.of(0, 1))
+        .stream().findFirst()
+        .orElseThrow(() -> new NoSuchElementException("데이터가 없습니다."));
 
-    switch(periodType.toUpperCase()) {
-      case "WEEKLY" :
-        baseDate = today.minusWeeks(1);
+    LocalDate baseDate;
+    switch (periodType.toUpperCase()) {
+      case "WEEKLY":
+        baseDate = indexDataRepository
+            .findFirstBaseDateBefore(today.minusWeeks(1))
+            .orElseThrow(() -> new NoSuchElementException("주간 기준 데이터가 없습니다."));
         break;
-      case "MONTHLY" :
-        baseDate = today.minusMonths(1);
+      case "MONTHLY":
+        baseDate = indexDataRepository
+            .findFirstBaseDateBefore(today.minusMonths(1))
+            .orElseThrow(() -> new NoSuchElementException("월간 기준 데이터가 없습니다."));
         break;
-      case "DAILY" :
+      case "DAILY":
       default:
-        baseDate = lateDates.get(1);
+        baseDate = indexDataRepository
+            .findDistinctByBaseDate(PageRequest.of(0, 2))
+            .stream().skip(1).findFirst()
+            .orElseThrow(() -> new NoSuchElementException("일간 기준 데이터가 없습니다."));
         break;
     }
-
     List<LocalDate> baseDates = List.of(today,baseDate);
 
-    List<IndexData> dataList = indexQueryRepository.findDataByDatesAndIndexName(baseDates, indexName);
+    List<IndexData> dataList = indexQueryRepository.findDataByDatesAndIndexName(baseDates, indexInfold);
     if (dataList.isEmpty()) {
       return Collections.emptyList();
     }

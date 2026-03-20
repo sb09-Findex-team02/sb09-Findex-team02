@@ -135,7 +135,6 @@ public class IndexDataController {
   public ResponseEntity<List<RankedIndexPerformanceDto>> getRankingPerformance(
       @Schema(description = "지수 정보")
       @RequestParam(required = false) Long indexInfoId,
-      @RequestParam(required = false) String indexName,
       @Schema(allowableValues = {"DAILY", "WEEKLY", "MONTHLY"},
           description = "성과 기간 유형 (DAILY, WEEKLY, MONTHLY)\n"
               + "\n" + "Default value : DAILY")
@@ -144,7 +143,7 @@ public class IndexDataController {
       @RequestParam(defaultValue = "10") Integer rankLimit
   ) {
     List<RankedIndexPerformanceDto> result = indexDataService.getPerformanceRanking(indexInfoId,
-        indexName, periodType, rankLimit);
+        periodType, rankLimit);
     return ResponseEntity.ok(result);
   }
 

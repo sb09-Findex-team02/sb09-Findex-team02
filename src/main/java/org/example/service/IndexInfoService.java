@@ -26,14 +26,12 @@ public class IndexInfoService {
     @Transactional
     public IndexInfoResponseDto createIndexInfo(IndexInfoCreateRequest request) {
 
-        boolean exists = indexInfoRepository.existsByCategoryNameAndIndexName(
-                request.indexClassification(),
-                request.indexName()
-        );
-
-        if (exists) {
-            throw new IllegalArgumentException("이미 같은 지수 분류명과 지수명을 가진 지수 정보가 존재합니다.");
-        }
+        indexInfoRepository.findByCategoryNameAndIndexName(
+            request.indexClassification(),
+            request.indexName()
+        ).ifPresent(i -> {
+            throw new IllegalArgumentException("이미 존재하는 지수입니다.");
+        });
 
         IndexInfo indexInfo = new IndexInfo(
                 request.indexClassification(),
@@ -47,8 +45,10 @@ public class IndexInfoService {
                 request.employedItemsCount()
         );
 
-        if (request.favorite() != null) {
-            indexInfo.updateFavorite(request.favorite());
+        if (request.basePointInTime() == null ||
+            request.baseIndex() == null ||
+            request.employedItemsCount() == null) {
+            throw new IllegalArgumentException("필수값 누락");
         }
 
         IndexInfo savedIndexInfo = indexInfoRepository.save(indexInfo);
